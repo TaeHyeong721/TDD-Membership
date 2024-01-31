@@ -5,6 +5,7 @@ import com.th.atdd.membership.app.membership.dto.MembershipAddResponse;
 import com.th.atdd.membership.app.membership.dto.MembershipDetailResponse;
 import com.th.atdd.membership.app.membership.entity.Membership;
 import com.th.atdd.membership.app.membership.repository.MembershipRepository;
+import com.th.atdd.membership.app.point.service.RatePointService;
 import com.th.atdd.membership.exception.MembershipErrorResult;
 import com.th.atdd.membership.exception.MembershipException;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,8 @@ public class MembershipServiceTest {
 
     @Mock
     private MembershipRepository membershipRepository;
+    @Mock
+    private RatePointService ratePointService;
 
     private final String userId = "userId";
     private final MembershipType membershipType = MembershipType.NAVER;
@@ -174,5 +177,30 @@ public class MembershipServiceTest {
 
         //then
         assertThat(result.getErrorResult()).isEqualTo(MembershipErrorResult.MEMBERSHIP_NOT_FOUND);
+    }
+
+    @Test
+    public void 멤버십적립실패_본인이아님() throws Exception {
+        //given
+        final Membership membership = membership();
+        doReturn(Optional.of(membership)).when(membershipRepository).findById(membershipId);
+
+        //when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.accumulateMembershipPoint(membershipId, "notowner", 10000));
+
+        //then
+        assertThat(result.getErrorResult()).isEqualTo(MembershipErrorResult.NOT_MEMBERSHIP_OWNER);
+    }
+
+    @Test
+    public void 멤버십적립성공() throws Exception {
+        //given
+        final Membership membership = membership();
+        doReturn(Optional.of(membership)).when(membershipRepository).findById(membershipId);
+
+        //when
+        target.accumulateMembershipPoint(membershipId, userId, 10000);
+
+        //then
     }
 }

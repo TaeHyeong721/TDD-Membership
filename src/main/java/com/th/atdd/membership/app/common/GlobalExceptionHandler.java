@@ -22,6 +22,18 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler({MembershipException.class})
+    public ResponseEntity<ErrorResponse> handleRestApiException(final MembershipException exception) {
+        log.warn("MembershipException occur : ", exception);
+        return this.makeErrorResponseEntity(exception.getErrorResult());
+    }
+
+    @ExceptionHandler({Exception.class})
+    public ResponseEntity<ErrorResponse> handleException(final Exception exception) {
+        log.warn("Exception occur : ", exception);
+        return this.makeErrorResponseEntity(MembershipErrorResult.UNKNOWN_EXCEPTION);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             final MethodArgumentNotValidException ex,
@@ -42,18 +54,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<Object> makeErrorResponseEntity(final String errorDescription) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), errorDescription));
-    }
-
-    @ExceptionHandler({MembershipException.class})
-    public ResponseEntity<ErrorResponse> handleRestApiException(final MembershipException exception) {
-        log.warn("MembershipException occur : ", exception);
-        return this.makeErrorResponseEntity(exception.getErrorResult());
-    }
-
-    @ExceptionHandler({Exception.class})
-    public ResponseEntity<ErrorResponse> handleException(final Exception exception) {
-        log.warn("Exception occur : ", exception);
-        return this.makeErrorResponseEntity(MembershipErrorResult.UNKNOWN_EXCEPTION);
     }
 
     private ResponseEntity<ErrorResponse> makeErrorResponseEntity(final MembershipErrorResult errorResult) {

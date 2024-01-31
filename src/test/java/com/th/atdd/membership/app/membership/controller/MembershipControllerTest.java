@@ -3,9 +3,9 @@ package com.th.atdd.membership.app.membership.controller;
 import com.google.gson.Gson;
 import com.th.atdd.membership.app.common.GlobalExceptionHandler;
 import com.th.atdd.membership.app.enums.MembershipType;
+import com.th.atdd.membership.app.membership.dto.MembershipAddResponse;
 import com.th.atdd.membership.app.membership.dto.MembershipDetailResponse;
 import com.th.atdd.membership.app.membership.dto.MembershipRequest;
-import com.th.atdd.membership.app.membership.dto.MembershipAddResponse;
 import com.th.atdd.membership.app.membership.service.MembershipService;
 import com.th.atdd.membership.exception.MembershipErrorResult;
 import com.th.atdd.membership.exception.MembershipException;
@@ -287,5 +287,39 @@ public class MembershipControllerTest {
 
         //then
         resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void 멤버십적립실패_포인트가음수() throws Exception {
+        //given
+        final String url = "/api/v1/memberships/-1/accumulate";
+
+        //when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post(url)
+                        .header(USER_ID_HEADER, "12345")
+                        .content(gson.toJson(membershipRequest(-1, MembershipType.NAVER)))
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void 멤버십적립성공() throws Exception {
+        //given
+        final String url = "/api/v1/memberships/-1/accumulate";
+
+        //when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post(url)
+                        .header(USER_ID_HEADER, "12345")
+                        .content(gson.toJson(membershipRequest(10000)))
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        resultActions.andExpect(status().isNoContent());
     }
 }
